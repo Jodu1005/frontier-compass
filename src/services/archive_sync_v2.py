@@ -88,6 +88,12 @@ ADVERTISED_CAPABILITIES = (
 # Compatibility alias for integrations that display the producer's advertised
 # feature set. Capability validation must use REQUIRED_CAPABILITIES instead.
 CAPABILITIES = ADVERTISED_CAPABILITIES
+# 分析流载荷的字段代次(接收端本地记账,不进线路协议):1 = issue #178 第二波之前;2 = 加入内容价值四项
+# (content_kind / content_value / content_value_reason / content_value_version)。旧版接收端会丢掉它不认识的
+# 字段、同步进度照样前移,升级后那些行不会重发;所以接收端记下自己按哪一代拉过分析流,落后时把分析流
+# checkpoint 清掉、整流重拉一次(逐行覆盖、presence 确认后才删,见 remote_sync.prepare_transaction_revision_consumer)。
+# 以后再给分析流加字段时把它 +1。
+ANALYSIS_PAYLOAD_GENERATION = 2
 AUTHORITY_ID_KEY = "archive_sync:v2:authority_id"
 CANDIDATE_STAGING_KEY_PREFIX = "archive_sync:v2:candidate_staging:"
 TAXONOMY_SNAPSHOT_DIGEST_KEY = "archive_sync:v2:taxonomy_snapshot_digest"
@@ -328,6 +334,10 @@ def _analysis_payload(session: Session, row: ArticleAnalysisRecord) -> dict[str,
         "podcast_final_score",
         "dimension_scores_json",
         "score_reason",
+        "content_kind",
+        "content_value",
+        "content_value_reason",
+        "content_value_version",
         "summary",
         "content_genre",
         "content_features_json",
@@ -1559,6 +1569,10 @@ def _supersede_local_analysis(
         record.transcript_artifact_id = None
         record.analysis_diagnostics_json = "{}"
         record.score_reason = ""
+        record.content_kind = None
+        record.content_value = None
+        record.content_value_reason = ""
+        record.content_value_version = ""
         record.summary = ""
         record.content_genre = None
         record.content_features_json = "[]"
@@ -1571,6 +1585,7 @@ def _supersede_local_analysis(
     record.next_attempt_at = None
     record.lease_owner = None
     record.lease_expires_at = None
+    record.pending_scope = ""
     record.last_error = None
     record.updated_at = now
     session.add(record)
@@ -2025,6 +2040,11 @@ def _apply_analyses(
             ("analysis_diagnostics_json", "{}"),
             ("podcast_initial_score", None),
             ("podcast_final_score", None),
+            # 内容价值(issue #178 第二波):旧版生产者的结果不带这几项,接收端置空而不是保留旧值。
+            ("content_kind", None),
+            ("content_value", None),
+            ("content_value_reason", ""),
+            ("content_value_version", ""),
         ):
             setattr(record, field, data.get(field, default))
         for field in (
@@ -2057,6 +2077,7 @@ def _apply_analyses(
         record.next_attempt_at = None
         record.lease_owner = None
         record.lease_expires_at = None
+        record.pending_scope = ""
         record.last_error = (
             None
             if record.status in {"pending", "running", "succeeded"}
