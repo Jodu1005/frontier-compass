@@ -40,7 +40,12 @@ export function shareTokenFromHash(hash) {
 /** 从 hash 解析站内深链的文章 ID；不是深链则返回 ''。 */
 export function deepLinkArticleId(hash) {
   const match = /^#\/reader\/a\/([^/?#]+)/.exec(String(hash || ''));
-  return match ? decodeURIComponent(match[1]) : '';
+  if (!match) return '';
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return '';
+  }
 }
 
 /** 有效期档位：与后端 SHARE_EXPIRY_CHOICES 对齐（null = 永久）。 */

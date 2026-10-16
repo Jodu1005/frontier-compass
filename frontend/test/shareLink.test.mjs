@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { shareTokenFromHash } from '../src/utils/shareLink.js';
+import { deepLinkArticleId, shareTokenFromHash } from '../src/utils/shareLink.js';
 
 test('malformed percent escape returns an empty token', () => {
   assert.equal(shareTokenFromHash('#/s/%'), '');
@@ -21,4 +21,24 @@ test('valid percent-encoded share token is decoded', () => {
 
 test('non-share route returns an empty token', () => {
   assert.equal(shareTokenFromHash('#/reader/a/42'), '');
+});
+
+test('malformed percent escape returns an empty article ID', () => {
+  assert.equal(deepLinkArticleId('#/reader/a/%'), '');
+});
+
+test('truncated UTF-8 escape returns an empty article ID', () => {
+  assert.equal(deepLinkArticleId('#/reader/a/%E4%B8'), '');
+});
+
+test('plain deep-link article ID is preserved', () => {
+  assert.equal(deepLinkArticleId('#/reader/a/article-42'), 'article-42');
+});
+
+test('valid percent-encoded article ID is decoded', () => {
+  assert.equal(deepLinkArticleId('#/reader/a/%E6%96%87%E7%AB%A0%2042'), '文章 42');
+});
+
+test('non-deep-link route returns an empty article ID', () => {
+  assert.equal(deepLinkArticleId('#/s/dshr_plain-token'), '');
 });
