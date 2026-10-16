@@ -29,7 +29,12 @@ export function publicShareLink(token) {
 /** 从 hash 解析公开分享令牌；不是分享页则返回 ''（登录门前调用，见 App.jsx）。 */
 export function shareTokenFromHash(hash) {
   const match = /^#\/s\/([^/?#]+)/.exec(String(hash || ''));
-  return match ? decodeURIComponent(match[1]) : '';
+  if (!match) return '';
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return '';
+  }
 }
 
 /** 从 hash 解析站内深链的文章 ID；不是深链则返回 ''。 */
