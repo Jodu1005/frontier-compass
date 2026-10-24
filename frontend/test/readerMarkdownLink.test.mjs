@@ -17,6 +17,8 @@ test('同源绝对 URL 留在当前页', () => {
 test('HTTP 与 HTTPS 外链在新页打开', () => {
   assert.equal(isExternalHttpLink('https://example.com/article', CURRENT_URL), true);
   assert.equal(isExternalHttpLink('http://example.com/article', CURRENT_URL), true);
+  assert.equal(isExternalHttpLink('//cdn.example.com/asset', CURRENT_URL), true);
+  assert.equal(isExternalHttpLink('//dorami.example/asset', CURRENT_URL), false);
 });
 
 test('不安全协议不判为可新页打开的外链', () => {
