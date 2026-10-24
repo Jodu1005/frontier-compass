@@ -7,6 +7,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { mediaProxyUrl } from '../api';
+import { isExternalHttpLink } from '../utils/readerMarkdownLink';
 
 // react-markdown 默认不渲染原始 HTML（无 rehype-raw），无 XSS 风险
 // remark-math + KaTeX:渲染正文里的 $...$ / $$...$$ LaTeX(学术型源如 Lil'Log
@@ -136,7 +137,18 @@ function MarkdownAnchor({ node, href, children, ...props }) {
     }
     return <span>[{num}]</span>;
   }
-  return <a href={href} {...props} target="_blank" rel="noreferrer">{children}</a>;
+  const currentUrl = typeof window === 'undefined' ? '' : window.location.href;
+  const external = isExternalHttpLink(href, currentUrl);
+  return (
+    <a
+      href={href}
+      {...props}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer' : undefined}
+    >
+      {children}
+    </a>
+  );
 }
 
 const MARKDOWN_COMPONENTS = {
@@ -172,7 +184,7 @@ function ImageLightbox({ src, alt, onClose }) {
   );
 }
 
-// 阅读器统一 Markdown 渲染：正文、译文、AI 问答回答共用同一套插件/组件（图片兜底、外链新窗、点击放大）。
+// 阅读器统一 Markdown 渲染：正文、译文、AI 问答回答共用同一套插件/组件（图片兜底、HTTP(S) 外链新窗、点击放大）。
 // resolveImageSrc（可选）：图片取图路径 builder（url → 请求地址），缺省为登录面媒体库代理；
 // 传入方需保证引用稳定（useCallback），否则每次渲染都会打散图片组件的 state。
 // citations（可选，AI 问答）：{ titleFor(n) → 标题, onCite(n) } —— 激活行内引用 chip 渲染；
