@@ -65,7 +65,7 @@ export default function RunningWidget({ runningIds, fetchProgress, fetchersById,
 
   if (variant === 'embedded') {
     return (
-      <button type="button" onClick={() => onViewRunning?.()} className="running-widget running-widget-embedded" title="查看运行历史">
+      <button type="button" onClick={() => onViewRunning?.()} className="running-widget running-widget-embedded" title="查看运行历史" aria-label="查看运行历史">
         {detail}
       </button>
     );
@@ -85,6 +85,7 @@ export default function RunningWidget({ runningIds, fetchProgress, fetchersById,
         onClick={() => onViewRunning?.()}
         className={`running-widget running-widget-docked ${open ? '' : 'dock-hidden'}`}
         title="查看运行历史"
+        aria-label="查看运行历史"
         tabIndex={open ? 0 : -1}
         aria-hidden={!open}
       >
@@ -97,7 +98,7 @@ export default function RunningWidget({ runningIds, fetchProgress, fetchersById,
         title={`${runningIds.size} 个节点正在抓取 · 查看运行历史`}
         tabIndex={open ? -1 : 0}
         aria-hidden={open}
-        aria-label={`${runningIds.size} 个节点正在抓取`}
+        aria-label="查看运行历史"
       >
         <RefreshCw className="running-mini-icon animate-spin" />
         <span className="running-mini-n">{runningIds.size}</span>
