@@ -17,7 +17,10 @@ test('同源绝对 URL 留在当前页', () => {
 test('HTTP 与 HTTPS 外链在新页打开', () => {
   assert.equal(isExternalHttpLink('https://example.com/article', CURRENT_URL), true);
   assert.equal(isExternalHttpLink('http://example.com/article', CURRENT_URL), true);
-  assert.equal(isExternalHttpLink('//cdn.example.com/asset', CURRENT_URL), true);
+});
+
+test('protocol-relative URL 不判为可新页打开的 HTTP(S) 外链', () => {
+  assert.equal(isExternalHttpLink('//example.com/path', CURRENT_URL), false);
   assert.equal(isExternalHttpLink('//dorami.example/asset', CURRENT_URL), false);
 });
 
