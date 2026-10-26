@@ -8,10 +8,6 @@ export function isExternalHttpLink(href, currentUrl) {
     return false;
   }
 
-  // Require an explicit HTTP(S) scheme before allowing a new tab. Protocol-relative
-  // links inherit the page protocol, so keep them in the current browsing context.
-  if (href.trimStart().startsWith('//')) return false;
-
   try {
     const base = new URL(currentUrl);
     const destination = new URL(href, base);

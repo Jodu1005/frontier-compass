@@ -19,8 +19,8 @@ test('HTTP 与 HTTPS 外链在新页打开', () => {
   assert.equal(isExternalHttpLink('http://example.com/article', CURRENT_URL), true);
 });
 
-test('protocol-relative URL 不判为可新页打开的 HTTP(S) 外链', () => {
-  assert.equal(isExternalHttpLink('//example.com/path', CURRENT_URL), false);
+test('protocol-relative URL 按解析后的 origin 判定', () => {
+  assert.equal(isExternalHttpLink('//example.com/path', CURRENT_URL), true);
   assert.equal(isExternalHttpLink('//dorami.example/asset', CURRENT_URL), false);
 });
 
